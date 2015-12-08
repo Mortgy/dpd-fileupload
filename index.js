@@ -95,7 +95,7 @@ Fileupload.prototype.handle = function (ctx, next) {
     if (req.method === "POST" || req.method === "PUT") {
 
         if (this.config.authorization && !me) {
-            return ctx.done({statusCode: 403, message: "You're not authorized to upload / modify files."});
+            return ctx.done({statusCode: 403, message: "You're not authorized to upload files."});
         }
 
         var form = new formidable.IncomingForm(),
@@ -219,8 +219,8 @@ Fileupload.prototype.handle = function (ctx, next) {
         return req.resume();
     } else if (req.method === "GET") {
 
-        if (this.config.authorization && this.config.reqGetAuthorization && !me) {
-            return ctx.done({statusCode: 403, message: "You're not authorized to view files."});
+        if (this.config.reqGetAuthorization && !me) {
+            return ctx.done(null, {statusCode: 403, message: "You're not authorized to view files."});
         }
 
 		this.get(ctx, function(err, result) {
@@ -239,6 +239,10 @@ Fileupload.prototype.handle = function (ctx, next) {
 		});
 
     } else if (req.method === "DELETE") {
+
+        if (this.config.authorization && !me) {
+            return ctx.done({statusCode: 403, message: "You're not authorized to delete files."});
+        }
 
         if (this.events['delete']) {
             this.events['delete'].run(ctx, domain, function(err) {
