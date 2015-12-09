@@ -171,7 +171,8 @@ Fileupload.prototype.handle = function (ctx, next) {
 
             if (config.fileTypeCheck) {
                 if (!_.contains(config.allowedFileTypes, mime.lookup(file.name))) {
-                    return ctx.done({statusCode: 403, message: "Uploaded file type isn't allowed."});
+                        resultFiles.push({statusCode: 403, message: "Uploaded file type isn't allowed."});
+                        processDone();
                 }
             }
             
