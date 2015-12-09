@@ -37,7 +37,9 @@ function Fileupload(options) {
         fullDirectory: path.join(__dirname, publicDir, (this.config.directory || 'upload')),
         authorization: this.config.authorization || false,
         reqGetAuthorization: this.config.reqGetAuthorization || false,
-        uniqueFilename: this.config.uniqueFilename  || false
+        uniqueFilename: this.config.uniqueFilename  || false,
+        fileTypeCheck: this.config.fileTypeCheck || false,
+        allowedFileTypes: this.config.allowedFileTypes || []
     };
 
     if (this.name === this.config.directory) {
@@ -78,6 +80,16 @@ Fileupload.basicDashboard = {
             name: 'uniqueFilename',
             type: 'checkbox',
             description: 'Allow unique file name ?'
+        },
+        {
+            name: 'fileTypeCheck',
+            type: 'checkbox',
+            description: 'Check file type ?'
+        },
+        {
+            name: 'allowedFileTypes',
+            type: 'text',
+            description: 'example: ["image/png", "image/jpg", "application/pdf"]'
         }
     ]
 };
@@ -156,6 +168,13 @@ Fileupload.prototype.handle = function (ctx, next) {
         var config = this.config;
 
         var renameAndStore = function(file) {
+
+            if (config.fileTypeCheck) {
+                if (!_.contains(config.allowedFileTypes, mime.lookup(file.name))) {
+                    return ctx.done({statusCode: 403, message: "Uploaded file type isn't allowed."});
+                }
+            }
+            
             fs.rename(file.path, path.join(uploadDir, file.name), function(err) {
                 if (err) return processDone(err);
                 debug("File renamed after event.upload.run: %j", err || path.join(uploadDir, file.name));
